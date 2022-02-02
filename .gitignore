@@ -36,3 +36,5 @@ terraform.rc
 # Misc
 .history
 .vscode
+.direnv
+
