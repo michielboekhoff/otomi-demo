@@ -8,7 +8,7 @@
       let pkgs = nixpkgs.legacyPackages.${system};
       in rec {
         devShell = pkgs.mkShell {
-          buildInputs = with pkgs; [ terraform terraform-ls git-secret ];
+          buildInputs = with pkgs; [ terraform terraform-ls git-secret kubernetes-helm ];
         };
 
       });
