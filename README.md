@@ -1,91 +1,71 @@
-# Otomi quick start
-
-Quickly deploy a Kubernetes cluster with [Otomi](https://github.com/redkubes/otomi-core) on the public cloud of your choice.
-
-**NOTE:** Intended for experimentation/evaluation ONLY.
-
-**You will be responsible for any/all infrastructure costs incurred by the used resources.**
-This repository intends to minimize costs by only provisioning the minimum required resources for a given provider.
+## Getting started with Otomi on GKE
 
 ---
 
-## Providers
+### Prerequisites
 
-A quick start is available for:
+- [GCloud SDK](https://cloud.google.com/sdk/docs/install)
+- [Terraform](https://cloud.google.com/sdk/docs/install)
 
-- [**Google Cloud Platform** (`gcp`)](./gcp)
-- [**Microsoft Azure Cloud** (`azure`)](./azure)
-- [**Amazon Web Services** (`aws`)](./aws)
-- [**Onprem**](./onprem)
+#### GCloud Cheat Sheet
 
-The `Terraform quick start` creates a (managed) Kubernetes cluster (AKS/GKE/EKS) in your public cloud of choice and installs Otomi in evaluation mode, which does not require any 3rd party services (e.g.: DNS, IdP, KMS). For a full (enterprise-grade/production-ready) setup, please visit: [otomi.io](https://otomi.io).
+```bash
+# Initialize and authentication
+gcloud init
+gcloud auth login
+gcloud auth application-default login
 
-The `onprem quick start` installs Otomi in evaluation mode on Kubernetes provisioned using microk8s, k3s, k0s, kubeadm, kubespray or minikube running on your private/local hardware.
-
-## Terraform quick start
-
-#### Requirements
-
-- [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli) >=0.14.0
-- Credentials for the cloud provider used for the quick start
-
-#### Deploy
-
-The quick start contains different Terraform workflows for each cloud provider respectively:
-
-```
-quickstart
-├── aws
-│   ├── eks             # Terraform workflow for installing EKS cluster
-│   └── otomi-install   # Terraform workflow for installing otomi on EKS cluster
-├── azure
-│   ├── aks             # Terraform workflow for installing AKS cluster
-│   └── otomi-install   # Terraform workflow for installing otomi on AKS cluster
-└── gcp
-    ├── gke             # Terraform workflow for installing GKE cluster
-    └── otomi-install   # Terraform workflow for installing otomi on GKE cluster
+# Enable google services api
+gcloud services enable compute.googleapis.com
+gcloud services enable container.googleapis.com
 ```
 
-To deploy a quickstart, perform the following steps:
+---
 
-1. Read instructions from `<cloud-provider>/README.md`
+### Set up a managed kubernetes cluster on GKE
 
-    - [**Google Cloud Platform** (`gcp/README.md`)](./gcp/README.md)
-    - [**Microsoft Azure Cloud** (`azure/README.md`)](./azure/README.md)
-    - [**Amazon Web Services** (`aws/README.md`)](./aws/README.md)
+- Navigate into the `gke` directory
+- Add your Project ID and Project Region to the `terraform.tfvars.example` file and rename the file to `terraform.tfvars`
 
-2. Navigate to `<cloud-provider>/<managed-k8s>` folder
-3. Copy `terraform.tfvars.example` file to `terraform.tfvars` file and fill in missing configuration parameters
-4. Run `terraform init`
-5. Run `terraform apply`
+- Open a terminal and run the following:
 
-Once the cluster is up and running,
+```bash
+# Initializes the directory
+terraform init
+# Sets up the GKE cluster
+terraform apply
+```
 
-1. Navigate to `<cloud-provider>/otomi-install` folder
-2. Copy `terraform.tfvars.example` file to `terraform.tfvars` file and fill in missing configuration parameters
-3. Run `terraform init`
-4. Run `terraform apply`
+---
 
-#### Next Steps
+### Install Otomi
 
-1. Monitor the logs of the installer job
+- Navigate to the `otomi-install` directory
+- Add your GKE Cluster Name and Project Region to the `terraform.tfvars.example` file and rename the file to `terraform.tfvars`
+- Open a terminal and run the following:
+
+```bash
+# Initializes the directory
+terraform init
+# Deploys and otomi installer job on the GKE cluster
+terraform apply
+```
+
+Check the logs of the Otomi installer job to see when the installation has finished. The installation can take around 20 to 30 minutes.
+
+First get the credentials of the cluster:
+
+```bash
+# Default: gcloud container clusters get-credentials otomi-quickstart --region europe-west4
+gcloud container clusters get-credentials <cluster_name> --region <region>
+```
+
+Monitor the logs of the installer job:
 
 ```bash
 kubectl logs jobs/quickstart-otomi -n default -f
 ```
 
-2. When the installer is finished, copy the `url` and `admin-password` from the console output
-3. Follow the post-installation steps [here](https://otomi.io/docs/installation/post-install)
+When the installer is finished, copy the `url` and `admin-password` from the console output.
 
-#### Destroy
-
-When you're finished exploring Otomi, use terraform to tear down all resources in the quickstart.
-
-**NOTE: Any resources not provisioned by the quickstart are not guaranteed to be destroyed when tearing down the quickstart.**
-Make sure you tear down any resources you provisioned manually before running the destroy command.
-
-```bash
-# Navigate into `<cloud-provider>/<managed-k8s>` folder and run
-terraform destroy -auto-approve
-# This destroys all the resources without prompting confirmation
-```
+Follow the post installation steps [here.](https://otomi.io/docs/installation/post-install)
